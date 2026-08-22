@@ -1,18 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DayBars from "../components/DayBars";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 export default function Login() {
-  const [params] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login, register } = useAuth();
-  const [mode, setMode] = useState(params.get("mode") === "signup" ? "signup" : "signin");
+
+  const getModeFromParams = () => {
+    const p = searchParams.get("mode") || searchParams.get("tab");
+    return p === "signup" || p === "register" ? "signup" : "signin";
+  };
+
+  const [mode, setMode] = useState(getModeFromParams);
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMode(getModeFromParams());
+  }, [searchParams]);
+
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setError("");
+    setSearchParams({ mode: newMode });
+  };
 
   const [signin, setSignin] = useState({ identifier: "", password: "" });
   const [signup, setSignup] = useState({
@@ -76,7 +92,7 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="auth__rail-foot mono">HRMS · 22ISE442</p>
+        <p className="auth__rail-foot mono">DayFlow · HRMS</p>
       </aside>
 
       <main className="auth__panel">
@@ -86,10 +102,7 @@ export default function Login() {
               role="tab"
               aria-selected={mode === "signin"}
               className={mode === "signin" ? "is-active" : ""}
-              onClick={() => {
-                setMode("signin");
-                setError("");
-              }}
+              onClick={() => switchMode("signin")}
             >
               Sign in
             </button>
@@ -97,10 +110,7 @@ export default function Login() {
               role="tab"
               aria-selected={mode === "signup"}
               className={mode === "signup" ? "is-active" : ""}
-              onClick={() => {
-                setMode("signup");
-                setError("");
-              }}
+              onClick={() => switchMode("signup")}
             >
               Register company
             </button>
@@ -163,7 +173,7 @@ export default function Login() {
 
               <p className="auth__switch">
                 New here? Your account is created by your HR admin —{" "}
-                <button type="button" className="linklike" onClick={() => setMode("signup")}>
+                <button type="button" className="linklike" onClick={() => switchMode("signup")}>
                   register your company instead
                 </button>
               </p>
@@ -278,7 +288,7 @@ export default function Login() {
 
               <p className="auth__switch">
                 Already registered?{" "}
-                <button type="button" className="linklike" onClick={() => setMode("signin")}>
+                <button type="button" className="linklike" onClick={() => switchMode("signin")}>
                   Sign in
                 </button>
               </p>
