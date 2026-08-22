@@ -179,12 +179,7 @@ HR: `OIPRHR20220011` / `PriyaHR@2022`
 | Jordan Dean | `OIJODO20220001` | `Jordan@2022` |
 | Riya Halder | `OIRIHA20220002` | `Riya@2022` |
 | Akash Kapoor | `OIAKKA20220003` | `Akash@2022` |
-| Sana Mehta | `OISAME20220004` | `Sana@2022` |
-| Vikram Kumar | `OIVIKU20220005` | `Vikram@2022` |
-| Neha Patil | `OINEPA20220006` | `Neha@2022` |
-| Rohit Sharma | `OIROSH20220007` | `Rohit@2022` |
-| Ananya Iyer | `OIANIY20220008` | `Ananya@2022` |
-| Divya Verma | `OIDIVE20220009` | `Divya@2022` |
+
 
 ## Useful Commands
 
