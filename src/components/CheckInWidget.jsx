@@ -9,7 +9,7 @@ export default function CheckInWidget() {
       {!isCheckedIn ? (
         <button
           onClick={checkIn}
-          className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 font-display text-sm font-semibold text-bg transition hover:bg-[#C465EE]"
+          className="check-in-primary flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 font-display text-sm font-semibold text-bg transition"
         >
           Check In <ArrowRight size={15} />
         </button>

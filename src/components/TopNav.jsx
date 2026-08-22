@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAttendance } from "../context/AttendanceContext";
+import { useAuth } from "../context/AuthContext";
 
 const TABS = [
   { to: "/dashboard", label: "Employees" },
@@ -9,11 +10,19 @@ const TABS = [
   { to: "/timeoff", label: "Time Off" },
 ];
 
+function getInitials(user) {
+  if (!user) return "??";
+  const first = user.firstName?.[0] ?? "";
+  const last = user.lastName?.[0] ?? "";
+  return (first + last).toUpperCase() || "??";
+}
+
 export default function TopNav() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const { isCheckedIn } = useAttendance();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     function onClick(e) {
@@ -22,6 +31,16 @@ export default function TopNav() {
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
+
+  async function handleLogout() {
+    setOpen(false);
+    try {
+      await logout();
+    } catch {
+      // clear client state even if the server call fails
+    }
+    navigate("/login");
+  }
 
   return (
     <header className="sticky top-0 z-20 border-b border-border-soft bg-bg/90 backdrop-blur">
@@ -60,7 +79,7 @@ export default function TopNav() {
             aria-expanded={open}
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-raised text-xs font-semibold text-accent-2">
-              JD
+              {getInitials(user)}
             </span>
             <ChevronDown size={14} className="text-muted" />
           </button>
@@ -83,10 +102,7 @@ export default function TopNav() {
               <button
                 role="menuitem"
                 className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-danger hover:bg-surface"
-                onClick={() => {
-                  setOpen(false);
-                  navigate("/login");
-                }}
+                onClick={handleLogout}
               >
                 <LogOut size={15} /> Log Out
               </button>
