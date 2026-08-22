@@ -47,6 +47,20 @@ async function main() {
       serial: 2,
     },
     {
+      firstName: "Priya",
+      lastName: "HR",
+      email: "priya.hr@dayflow.io",
+      loginId: "OIPRHR20220011",
+      password: "PriyaHR@2022",
+      role: "HR",
+      jobTitle: "HR Officer",
+      department: "Human Resources",
+      phone: "+91 98765 43220",
+      location: "Bengaluru, IN",
+      joinYear: 2022,
+      serial: 11,
+    },
+    {
       firstName: "Riya",
       lastName: "Halder",
       email: "riya.halder@dayflow.io",
@@ -201,6 +215,70 @@ async function main() {
         },
       });
       console.log(`Updated user: ${existing.firstName} ${existing.lastName} [${user.loginId}]`);
+    }
+  }
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const attendanceStatuses = [
+    { loginId: "OISPAD20220001", status: "PRESENT" },
+    { loginId: "OIPRHR20220011", status: "PRESENT" },
+    { loginId: "OIAKKA20220003", status: "LEAVE" },
+    { loginId: "OIVIKU20220005", status: "ABSENT" },
+    { loginId: "OIROSH20220007", status: "LEAVE" },
+    { loginId: "OIDIVE20220009", status: "ABSENT" },
+  ];
+
+  for (const attendance of attendanceStatuses) {
+    const employee = await prisma.employee.findUnique({ where: { loginId: attendance.loginId } });
+    if (employee) {
+      const checkIn = attendance.status === "PRESENT" ? new Date(today.getTime() - 5.5 * 60 * 60 * 1000 + (9 * 60 + 20) * 60 * 1000) : null;
+      const checkOut = attendance.status === "PRESENT" ? new Date(today.getTime() - 5.5 * 60 * 60 * 1000 + (17 * 60 + 20) * 60 * 1000) : null;
+      await prisma.attendance.upsert({
+        where: { employeeId_date: { employeeId: employee.id, date: today } },
+        update: { status: attendance.status, checkIn, checkOut },
+        create: { employeeId: employee.id, date: today, status: attendance.status, checkIn, checkOut },
+      });
+    }
+  }
+
+  const leaveReasons = ["Medical appointment", "Personal leave", "Family responsibility", "Rest day"];
+  const absentReasons = ["Unplanned absence", "No check-in recorded", "Personal emergency"];
+  const historyStart = new Date(today);
+  historyStart.setUTCDate(historyStart.getUTCDate() - 60);
+  const allEmployees = await prisma.employee.findMany({ select: { id: true } });
+  for (const employee of allEmployees) {
+    for (const cursor = new Date(historyStart); cursor < today; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+      if (cursor.getUTCDay() === 0 || cursor.getUTCDay() === 6) continue;
+      const roll = Math.random();
+      const status = roll < 0.88 ? "PRESENT" : roll < 0.94 ? "LEAVE" : "ABSENT";
+      const reason = status === "PRESENT" ? null : (status === "LEAVE" ? leaveReasons : absentReasons)[Math.floor(Math.random() * 3)];
+      const indiaOffset = 5.5 * 60 * 60 * 1000;
+      const checkIn = status === "PRESENT" ? new Date(cursor.getTime() - indiaOffset + (9 * 60 + Math.floor(Math.random() * 60)) * 60 * 1000) : null;
+      const checkOut = status === "PRESENT" ? new Date(cursor.getTime() - indiaOffset + (17 * 60 + Math.floor(Math.random() * 60)) * 60 * 1000) : null;
+      await prisma.attendance.upsert({
+        where: { employeeId_date: { employeeId: employee.id, date: new Date(cursor) } },
+        update: { status, reason, checkIn, checkOut },
+        create: { employeeId: employee.id, date: new Date(cursor), status, reason, checkIn, checkOut },
+      });
+    }
+  }
+
+  const approvedLeaves = [
+    { loginId: "OIAKKA20220003", type: "PAID", daysAgo: 14, length: 2, remarks: "Personal leave" },
+    { loginId: "OIROSH20220007", type: "SICK", daysAgo: 28, length: 1, remarks: "Medical appointment" },
+    { loginId: "OIJODO20220001", type: "PAID", daysAgo: 42, length: 3, remarks: "Family responsibility" },
+  ];
+  for (const leave of approvedLeaves) {
+    const employee = await prisma.employee.findUnique({ where: { loginId: leave.loginId }, select: { id: true } });
+    if (!employee) continue;
+    const startDate = new Date(today);
+    startDate.setUTCDate(startDate.getUTCDate() - leave.daysAgo);
+    const endDate = new Date(startDate);
+    endDate.setUTCDate(endDate.getUTCDate() + leave.length - 1);
+    const existing = await prisma.leaveRequest.findFirst({ where: { employeeId: employee.id, startDate, endDate, type: leave.type } });
+    if (!existing) {
+      await prisma.leaveRequest.create({ data: { employeeId: employee.id, type: leave.type, startDate, endDate, remarks: leave.remarks, status: "APPROVED" } });
     }
   }
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck, X } from "lucide-react";
 import { certificationPresets, skillPresets } from "../data/profilePresets";
 import { useAuth } from "../context/AuthContext";
@@ -73,6 +74,9 @@ export default function AdminProfile() {
   const [skills, setSkills] = useState(["Leadership", "People Operations", "Strategic Planning"]);
   const [certifications, setCertifications] = useState(["SHRM Certified Professional", "PMP"]);
 
+  const role = user?.role ?? "EMPLOYEE";
+  const roleLabel = role === "ADMIN" ? "Administrator" : role === "HR" ? "HR Officer" : "Employee";
+  const accessLabel = role === "ADMIN" ? "Admin access" : role === "HR" ? "Full HR access" : "Employee access";
   const userName = user ? `${user.firstName} ${user.lastName}` : "Administrator";
   const userInitials = user ? initials(user.firstName, user.lastName) : "AD";
 
@@ -88,11 +92,11 @@ export default function AdminProfile() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-2">Admin console</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-text">Administrator profile</h1>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-2">{roleLabel} profile</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-text">{roleLabel} profile</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Manage your HR identity, secure access credentials, and the expertise you bring to every employee record.</p>
         </div>
-        <span className="flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-2 text-xs text-success"><ShieldCheck size={14} /> HR administrator</span>
+        <span className="flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-2 text-xs text-success"><ShieldCheck size={14} /> {roleLabel}</span>
       </div>
 
       <section className="admin-hero rounded-xl border border-border bg-surface/70 p-5 sm:p-6">
@@ -101,12 +105,12 @@ export default function AdminProfile() {
           <div className="min-w-[220px] flex-1">
             <p className="text-xs uppercase tracking-widest text-faint">Full name</p>
             <h2 className="mt-1 font-display text-2xl font-semibold text-text">{userName}</h2>
-            <p className="mt-1 text-sm text-muted">People Operations Lead · DayFlow HQ</p>
+            <p className="mt-1 text-sm text-muted">{roleLabel} · DayFlow HQ</p>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
             <div><p className="text-xs text-faint">Login ID</p><p className="mt-1 font-mono text-text">{user?.loginId ?? "—"}</p></div>
             <div><p className="text-xs text-faint">Last active</p><p className="mt-1 text-text">Today, {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>
-            <div><p className="text-xs text-faint">Access level</p><p className="mt-1 text-accent-2">Full HR access</p></div>
+            <div><p className="text-xs text-faint">Access level</p><p className="mt-1 text-accent-2">{accessLabel}</p></div>
             <div><p className="text-xs text-faint">Email</p><p className="mt-1 text-text">{user?.email ?? "—"}</p></div>
           </div>
         </div>
@@ -121,7 +125,10 @@ export default function AdminProfile() {
             <label className="text-xs text-muted">Password<input type={showPassword ? "text" : "password"} value="••••••••••••" readOnly className="admin-input mt-2 pr-10 font-mono" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="relative float-right -mt-8 mr-3 text-muted hover:text-text" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></label>
             <label className="text-xs text-muted">Role<input value={user?.role ?? "ADMIN"} readOnly className="admin-input mt-2 font-mono" /></label>
           </div>
-          <p className="mt-4 text-xs text-faint">Credentials are visible only to authorized administrators.</p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-faint">Credentials are visible only to you and authorized administrators.</p>
+            <Link to="/change-password" className="text-xs font-semibold text-accent-2 hover:text-text">Change password</Link>
+          </div>
         </section>
 
         <section className="rounded-xl border border-border bg-surface/65 p-5">

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AttendanceProvider } from "../context/AttendanceContext";
 import TopNav from "../components/TopNav";
-import CheckInWidget from "../components/CheckInWidget";
 
 export default function AppShell() {
   const [pointer, setPointer] = useState({ x: 50, y: 18 });
@@ -26,7 +25,6 @@ export default function AppShell() {
         <main className="mx-auto max-w-[1180px] px-6 py-8">
           <Outlet />
         </main>
-        <CheckInWidget />
       </div>
     </AttendanceProvider>
   );

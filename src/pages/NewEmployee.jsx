@@ -7,19 +7,19 @@ import { api } from "../lib/api";
 export default function NewEmployee() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN";
+  const canManageEmployees = user?.role === "ADMIN" || user?.role === "HR";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [department, setDepartment] = useState("");
+  const [role, setRole] = useState("EMPLOYEE");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null); // { id, loginId, tempPassword }
 
-  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  if (!canManageEmployees) return <Navigate to="/dashboard" replace />;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -29,10 +29,10 @@ export default function NewEmployee() {
       const data = await api.createEmployee({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        email: email.trim(),
         phone: phone.trim() || undefined,
         jobTitle: jobTitle.trim() || undefined,
         department: department.trim() || undefined,
+        role,
       });
       setResult(data);
     } catch (err) {
@@ -62,6 +62,10 @@ export default function NewEmployee() {
             <p className="mt-1 break-all font-mono text-text">{result.id}</p>
           </div>
           <div className="rounded-lg border border-border bg-bg/30 p-3 sm:col-span-2">
+            <p className="text-xs text-faint">Email</p>
+            <p className="mt-1 break-all font-mono text-text">{result.email}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-bg/30 p-3 sm:col-span-2">
             <p className="text-xs text-faint">Temporary password</p>
             <p className="mt-1 font-mono text-text">{result.tempPassword}</p>
           </div>
@@ -88,7 +92,7 @@ export default function NewEmployee() {
       </button>
 
       <div>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-2">Admin only</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-2">Admin and HR</p>
         <h1 className="mt-2 font-display text-3xl font-semibold text-text">Add new employee</h1>
         <p className="mt-2 text-sm text-muted">
           Create an employee account. The system will auto-generate a Login ID and temporary password.
@@ -121,14 +125,7 @@ export default function NewEmployee() {
           </label>
           <label className="text-sm text-muted">
             Email
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="employee@company.com"
-              className="admin-input mt-2"
-            />
+            <div className="admin-input mt-2 flex items-center text-faint">Auto-generated after account creation</div>
           </label>
           <label className="text-sm text-muted">
             Phone
@@ -157,6 +154,16 @@ export default function NewEmployee() {
               className="admin-input mt-2"
             />
           </label>
+          {user?.role === "ADMIN" && (
+            <label className="text-sm text-muted">
+              Access role
+              <select value={role} onChange={(e) => setRole(e.target.value)} className="admin-input mt-2">
+                <option value="EMPLOYEE">Employee</option>
+                <option value="HR">HR</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </label>
+          )}
         </div>
 
         {error && (

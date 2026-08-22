@@ -29,8 +29,11 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(signin.identifier, signin.password);
-      navigate("/dashboard");
+      const result = await login(signin.identifier, signin.password);
+      navigate(result.mustChangePassword ? "/change-password" : "/dashboard", {
+        replace: true,
+        state: result.mustChangePassword ? { required: true } : undefined,
+      });
     } catch (err) {
       setError(err.message);
     } finally {

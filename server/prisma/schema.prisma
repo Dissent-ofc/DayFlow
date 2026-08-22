@@ -10,7 +10,8 @@ datasource db {
 }
 
 enum Role {
-  ADMIN // Admin / HR Officer — see doc section 2
+  ADMIN
+  HR
   EMPLOYEE
 }
 
@@ -86,6 +87,7 @@ model Attendance {
   checkIn    DateTime?
   checkOut   DateTime?
   status     AttendanceStatus  @default(PRESENT)
+  reason     String?
 
   @@unique([employeeId, date])
 }
