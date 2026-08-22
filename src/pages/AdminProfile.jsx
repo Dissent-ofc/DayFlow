@@ -71,8 +71,8 @@ function Picker({ title, items, selected, onAdd, onRemove }) {
 export default function AdminProfile() {
   const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [skills, setSkills] = useState(["Leadership", "People Operations", "Strategic Planning"]);
-  const [certifications, setCertifications] = useState(["SHRM Certified Professional", "PMP"]);
+  const [skills, setSkills] = useState(user?.skills ?? []);
+  const [certifications, setCertifications] = useState(user?.certifications ?? []);
 
   const role = user?.role ?? "EMPLOYEE";
   const roleLabel = role === "ADMIN" ? "Administrator" : role === "HR" ? "HR Officer" : "Employee";
@@ -109,7 +109,7 @@ export default function AdminProfile() {
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
             <div><p className="text-xs text-faint">Login ID</p><p className="mt-1 font-mono text-text">{user?.loginId ?? "—"}</p></div>
-            <div><p className="text-xs text-faint">Last active</p><p className="mt-1 text-text">Today, {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p></div>
+            <div><p className="text-xs text-faint">Last active</p><p className="mt-1 text-text">{user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Not available"}</p></div>
             <div><p className="text-xs text-faint">Access level</p><p className="mt-1 text-accent-2">{accessLabel}</p></div>
             <div><p className="text-xs text-faint">Email</p><p className="mt-1 text-text">{user?.email ?? "—"}</p></div>
           </div>

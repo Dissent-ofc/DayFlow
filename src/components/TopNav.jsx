@@ -65,6 +65,7 @@ export default function TopNav() {
               {t.label}
             </NavLink>
           ))}
+          {user?.role === "HR" && <NavLink to="/salary" className={({ isActive }) => `rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${isActive ? "bg-accent text-bg" : "text-muted hover:text-text"}`}>Salary</NavLink>}
         </nav>
 
         <div className="ml-auto flex items-center gap-3" ref={menuRef}>
