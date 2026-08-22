@@ -32,6 +32,12 @@ export const api = {
       body: JSON.stringify({ currentPassword, newPassword }),
     }),
 
+  updateCompany: (data) =>
+    request("/auth/company", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   // Employees
   listEmployees: () => request("/employees"),
 

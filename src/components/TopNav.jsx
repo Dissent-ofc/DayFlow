@@ -46,9 +46,28 @@ export default function TopNav() {
   return (
     <header className="sticky top-0 z-20 border-b border-border-soft bg-bg/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1180px] items-center gap-2 px-6 py-3">
-        <NavLink to="/dashboard" className="flex items-center gap-2 pr-4">
-          <span className="inline-block h-4 w-4 rounded-[5px] bg-gradient-to-br from-accent to-accent-2" />
-          <span className="font-mono text-[15px] font-semibold text-text">DayFlow</span>
+        <NavLink to="/dashboard" className="flex items-center gap-2.5 pr-4 group">
+          {user?.company?.logoUrl ? (
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface-raised shadow-sm transition-transform group-hover:scale-105">
+              <img
+                src={user.company.logoUrl}
+                alt={user.company.name || "Company Logo"}
+                className="h-full w-full object-contain p-1"
+              />
+            </div>
+          ) : (
+            <span className="inline-block h-4 w-4 rounded-[5px] bg-gradient-to-br from-accent to-accent-2 shadow-sm transition-transform group-hover:scale-110" />
+          )}
+          <div className="flex flex-col">
+            <span className="font-display text-[15px] font-semibold text-text tracking-tight group-hover:text-accent transition-colors">
+              {user?.company?.name || "DayFlow"}
+            </span>
+            {user?.company?.name && (
+              <span className="font-mono text-[9px] text-faint tracking-wider uppercase">
+                DayFlow HRMS
+              </span>
+            )}
+          </div>
         </NavLink>
 
         <nav className="flex items-center gap-1 rounded-full border border-border bg-surface p-1">
@@ -89,11 +108,19 @@ export default function TopNav() {
           {open && (
             <div
               role="menu"
-              className="absolute right-6 top-14 w-44 overflow-hidden rounded-lg border border-border bg-surface-raised shadow-xl"
+              className="absolute right-6 top-14 w-52 overflow-hidden rounded-xl border border-border bg-surface-raised shadow-2xl backdrop-blur-md"
             >
+              <div className="border-b border-border/70 px-4 py-3 bg-surface/60">
+                <p className="text-xs font-semibold text-text truncate">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="text-[11px] font-mono text-accent-2 truncate mt-0.5">
+                  {user?.company?.name || "DayFlow"} · {user?.role || "EMPLOYEE"}
+                </p>
+              </div>
               <button
                 role="menuitem"
-                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-text hover:bg-surface"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-text hover:bg-surface transition-colors"
                 onClick={() => {
                   setOpen(false);
                   navigate("/profile");
@@ -103,7 +130,7 @@ export default function TopNav() {
               </button>
               <button
                 role="menuitem"
-                className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-danger hover:bg-surface"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-danger hover:bg-surface transition-colors"
                 onClick={handleLogout}
               >
                 <LogOut size={15} /> Log Out

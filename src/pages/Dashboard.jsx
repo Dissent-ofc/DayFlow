@@ -80,6 +80,31 @@ export default function Dashboard() {
 
   return (
     <div>
+      {user?.company && (
+        <div className="mb-4 flex items-center justify-between border-b border-border-soft pb-3">
+          <div className="flex items-center gap-2.5">
+            {user.company.logoUrl && (
+              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface p-0.5 shadow-sm">
+                <img
+                  src={user.company.logoUrl}
+                  alt={user.company.name}
+                  className="h-full w-full object-contain rounded"
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="font-display text-base font-semibold text-text leading-none">
+                {user.company.name}
+              </h1>
+              <p className="font-mono text-[10px] text-faint mt-0.5">Organization Directory</p>
+            </div>
+          </div>
+          <span className="font-mono text-[11px] text-accent-2 bg-accent-2/10 border border-accent-2/20 px-2 py-0.5 rounded">
+            CODE: {user.company.code || "HQ"}
+          </span>
+        </div>
+      )}
+
       <div className="mb-5 grid grid-cols-3 gap-2 sm:gap-3">
         <div className="rounded-lg border border-success/25 bg-success/8 p-3"><p className="font-display text-xl text-success">{statusCounts.present}</p><p className="text-xs text-muted">Present</p></div>
         <div className="rounded-lg border border-accent-2/25 bg-accent-2/8 p-3"><p className="font-display text-xl text-accent-2">{statusCounts.leave}</p><p className="text-xs text-muted">On leave</p></div>

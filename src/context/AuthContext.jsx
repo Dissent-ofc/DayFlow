@@ -35,8 +35,25 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await api.me();
+      setUser(me);
+      return me;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const updateCompanyLogo = useCallback(async (logoUrl) => {
+    await api.updateCompany({ logoUrl });
+    const me = await api.me();
+    setUser(me);
+    return me;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, refreshUser, updateCompanyLogo }}>
       {children}
     </AuthContext.Provider>
   );

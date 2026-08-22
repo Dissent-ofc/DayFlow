@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck, X } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck, X, Building2, UploadCloud, Check } from "lucide-react";
 import { certificationPresets, skillPresets } from "../data/profilePresets";
 import { useAuth } from "../context/AuthContext";
 
@@ -69,16 +69,22 @@ function Picker({ title, items, selected, onAdd, onRemove }) {
 }
 
 export default function AdminProfile() {
-  const { user } = useAuth();
+  const { user, updateCompanyLogo } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [skills, setSkills] = useState(["Leadership", "People Operations", "Strategic Planning"]);
   const [certifications, setCertifications] = useState(["SHRM Certified Professional", "PMP"]);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoSuccess, setLogoSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   const role = user?.role ?? "EMPLOYEE";
   const roleLabel = role === "ADMIN" ? "Administrator" : role === "HR" ? "HR Officer" : "Employee";
   const accessLabel = role === "ADMIN" ? "Admin access" : role === "HR" ? "Full HR access" : "Employee access";
   const userName = user ? `${user.firstName} ${user.lastName}` : "Administrator";
   const userInitials = user ? initials(user.firstName, user.lastName) : "AD";
+  const companyName = user?.company?.name || "DayFlow HQ";
+  const companyLogo = user?.company?.logoUrl;
+  const canEditCompany = role === "ADMIN" || role === "HR";
 
   function addItem(setter, item) {
     setter((current) => current.includes(item) ? current : [...current, item]);
@@ -87,6 +93,51 @@ export default function AdminProfile() {
   function removeItem(setter, item) {
     setter((current) => current.filter((value) => value !== item));
   }
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    setLogoSuccess(false);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/png", 0.9);
+
+        try {
+          await updateCompanyLogo(dataUrl);
+          setLogoSuccess(true);
+          setTimeout(() => setLogoSuccess(false), 3000);
+        } catch (err) {
+          console.error("Failed to update logo", err);
+        } finally {
+          setUploadingLogo(false);
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -105,7 +156,16 @@ export default function AdminProfile() {
           <div className="min-w-[220px] flex-1">
             <p className="text-xs uppercase tracking-widest text-faint">Full name</p>
             <h2 className="mt-1 font-display text-2xl font-semibold text-text">{userName}</h2>
-            <p className="mt-1 text-sm text-muted">{roleLabel} · DayFlow HQ</p>
+            <div className="mt-1.5 flex items-center gap-2 text-sm text-muted">
+              {companyLogo && (
+                <img
+                  src={companyLogo}
+                  alt={companyName}
+                  className="h-5 w-5 rounded object-contain border border-border bg-surface-raised"
+                />
+              )}
+              <span>{roleLabel} · {companyName}</span>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
             <div><p className="text-xs text-faint">Login ID</p><p className="mt-1 font-mono text-text">{user?.loginId ?? "—"}</p></div>
@@ -115,6 +175,61 @@ export default function AdminProfile() {
           </div>
         </div>
       </section>
+
+      {canEditCompany && (
+        <section className="rounded-xl border border-border bg-surface/65 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-accent-2/15 p-2.5 text-accent-2">
+                <Building2 size={20} />
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-semibold text-text">Company Branding</h2>
+                <p className="text-xs text-muted">Your organization's official logo displayed to all employees on login and portal navigation.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleLogoUpload}
+                accept="image/*"
+                className="hidden"
+                aria-label="Upload new company logo"
+              />
+
+              <div className="flex items-center gap-3">
+                {companyLogo ? (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-surface-raised p-1 shadow-sm">
+                    <img src={companyLogo} alt={companyName} className="h-full w-full object-contain rounded" />
+                  </div>
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-border bg-surface text-faint text-xs">
+                    No logo
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/15 px-3.5 py-2 text-xs font-semibold text-text transition hover:bg-accent/25 disabled:opacity-50"
+                >
+                  <UploadCloud size={15} />
+                  {uploadingLogo ? "Saving…" : companyLogo ? "Change Logo" : "Upload Logo"}
+                </button>
+              </div>
+
+              {logoSuccess && (
+                <span className="flex items-center gap-1 text-xs text-success font-medium">
+                  <Check size={14} /> Updated
+                </span>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-xl border border-border bg-surface/65 p-5">

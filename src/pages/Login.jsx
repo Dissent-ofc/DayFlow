@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { UploadCloud } from "lucide-react";
 import DayBars from "../components/DayBars";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
@@ -8,6 +9,7 @@ export default function Login() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login, register } = useAuth();
+  const fileInputRef = useRef(null);
 
   const getModeFromParams = () => {
     const p = searchParams.get("mode") || searchParams.get("tab");
@@ -38,7 +40,52 @@ export default function Login() {
     phone: "",
     password: "",
     confirmPassword: "",
+    logoUrl: "",
   });
+
+  const handleLogoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Logo image should be under 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/png", 0.9);
+        setSignup((prev) => ({ ...prev, logoUrl: dataUrl }));
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = (e) => {
+    e.stopPropagation();
+    setSignup((prev) => ({ ...prev, logoUrl: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   async function handleSignIn(e) {
     e.preventDefault();
@@ -186,8 +233,11 @@ export default function Login() {
                 automatically after this.
               </p>
 
-              <label className="field field--upload">
-                <span>Company name</span>
+              <div className="field field--upload">
+                <div className="field__label-row">
+                  <span>Company name</span>
+                  <span className="field__sublabel">{signup.logoUrl ? "Logo added" : "Upload logo (optional)"}</span>
+                </div>
                 <div className="field__row">
                   <input
                     type="text"
@@ -196,9 +246,48 @@ export default function Login() {
                     onChange={(e) => setSignup({ ...signup, companyName: e.target.value })}
                     required
                   />
-                  <button type="button" className="upload-btn" aria-label="Upload company logo">⇧</button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoFileChange}
+                    accept="image/*"
+                    className="hidden"
+                    aria-label="Choose company logo file"
+                  />
+                  {signup.logoUrl ? (
+                    <div className="upload-btn-wrap">
+                      <button
+                        type="button"
+                        className="upload-btn upload-btn--has-image"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Click to change logo"
+                        aria-label="Change company logo"
+                      >
+                        <img src={signup.logoUrl} alt="Company logo preview" className="upload-btn__img" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="upload-btn__remove"
+                        title="Remove logo"
+                        aria-label="Remove company logo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="upload-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Upload company logo"
+                      aria-label="Upload company logo"
+                    >
+                      <UploadCloud size={18} />
+                    </button>
+                  )}
                 </div>
-              </label>
+              </div>
 
               <label className="field">
                 <span>Your name</span>

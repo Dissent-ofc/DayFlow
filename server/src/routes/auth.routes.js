@@ -12,7 +12,7 @@ export const authRouter = Router();
  * Matches the "Register company" tab on the Sign Up screen.
  */
 authRouter.post("/register-company", async (req, res) => {
-  const { companyName, name, email, phone, password } = req.body;
+  const { companyName, name, email, phone, password, logoUrl } = req.body;
 
   if (!companyName || !name || !email || !password) {
     return res.status(400).json({ error: "companyName, name, email and password are required." });
@@ -26,7 +26,11 @@ authRouter.post("/register-company", async (req, res) => {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
-        data: { name: companyName, code: companyCode },
+        data: {
+          name: companyName,
+          code: companyCode,
+          logoUrl: logoUrl || null,
+        },
       });
 
       const loginId = generateLoginId({ companyCode, firstName, lastName, joinYear, serial: 1 });
@@ -61,6 +65,7 @@ authRouter.post("/register-company", async (req, res) => {
     res.status(201).json({
       loginId: result.admin.loginId,
       company: result.company.name,
+      logoUrl: result.company.logoUrl,
     });
   } catch (err) {
     if (err.code === "P2002") {
@@ -91,6 +96,16 @@ authRouter.post("/login", async (req, res) => {
           { loginId: { contains: identifier.trim(), mode: "insensitive" } },
         ],
       },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            logoUrl: true,
+          },
+        },
+      },
     });
 
     if (!employee || !(await verifyPassword(password, employee.passwordHash))) {
@@ -105,6 +120,7 @@ authRouter.post("/login", async (req, res) => {
       loginId: employee.loginId,
       role: employee.role,
       mustChangePassword: employee.mustChangePassword,
+      company: employee.company,
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -140,7 +156,47 @@ authRouter.post("/change-password", requireAuth, async (req, res) => {
 authRouter.get("/me", requireAuth, async (req, res) => {
   const employee = await prisma.employee.findUnique({
     where: { id: req.user.id },
-    select: { id: true, loginId: true, firstName: true, lastName: true, role: true, email: true },
+    select: {
+      id: true,
+      loginId: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      email: true,
+      avatarUrl: true,
+      companyId: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          logoUrl: true,
+        },
+      },
+    },
   });
   res.json(employee);
+});
+
+/** PATCH /auth/company — Admin/HR can update company profile and logo. */
+authRouter.patch("/company", requireAuth, async (req, res) => {
+  if (req.user.role !== "ADMIN" && req.user.role !== "HR") {
+    return res.status(403).json({ error: "Only admins and HR can update company details." });
+  }
+
+  const { name, logoUrl } = req.body;
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
+
+  try {
+    const updatedCompany = await prisma.company.update({
+      where: { id: req.user.companyId },
+      data: updateData,
+    });
+    res.json(updatedCompany);
+  } catch (err) {
+    console.error("Update company error:", err);
+    res.status(500).json({ error: "Could not update company profile." });
+  }
 });
