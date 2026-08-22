@@ -1,5 +1,6 @@
 import { prisma } from "../src/lib/prisma.js";
 import { hashPassword } from "../src/utils/auth.js";
+import { profileForEmployee } from "../src/utils/profile.js";
 
 async function main() {
   console.log("Seeding database with default users and company...");
@@ -192,6 +193,12 @@ async function main() {
           jobTitle: user.jobTitle,
           department: user.department,
           phone: user.phone,
+          address: user.address,
+          manager: user.manager,
+          skills: profileForEmployee(user).skills,
+          certifications: profileForEmployee(user).certifications,
+           resumeSummary: profileForEmployee(user).resumeSummary,
+           interests: profileForEmployee(user).interests,
           location: user.location,
           companyId: company.id,
           joinYear: user.joinYear,
@@ -211,10 +218,49 @@ async function main() {
           jobTitle: user.jobTitle,
           department: user.department,
           phone: user.phone,
+          address: user.address,
+          manager: user.manager,
+          skills: profileForEmployee(user).skills,
+          certifications: profileForEmployee(user).certifications,
+           resumeSummary: profileForEmployee(user).resumeSummary,
+           interests: profileForEmployee(user).interests,
           location: user.location,
         },
       });
       console.log(`Updated user: ${existing.firstName} ${existing.lastName} [${user.loginId}]`);
+    }
+  }
+
+  const manager = await prisma.employee.findUnique({ where: { loginId: "OISPAD20220001" }, select: { id: true, firstName: true, lastName: true } });
+  const privateInfo = [
+    "14 Residency Road, Bengaluru, Karnataka",
+    "22 Park Street, Bengaluru, Karnataka",
+    "8 Linking Road, Mumbai, Maharashtra",
+    "31 Anna Salai, Chennai, Tamil Nadu",
+    "5 Banjara Hills, Hyderabad, Telangana",
+    "19 FC Road, Pune, Maharashtra",
+    "42 Connaught Place, New Delhi",
+    "7 MG Road, Bengaluru, Karnataka",
+    "11 Koregaon Park, Pune, Maharashtra",
+    "3 Salt Lake, Kolkata, West Bengal",
+    "28 Hitech City Road, Hyderabad, Telangana",
+  ];
+  if (manager) {
+    const companyEmployees = await prisma.employee.findMany({ where: { companyId: company.id }, orderBy: { createdAt: "asc" }, select: { id: true, role: true, jobTitle: true, phone: true, address: true, manager: true, skills: true, certifications: true, resumeSummary: true, interests: true, lastLoginAt: true } });
+    for (const [index, employee] of companyEmployees.entries()) {
+      await prisma.employee.update({
+        where: { id: employee.id },
+        data: {
+          manager: `${manager.firstName} ${manager.lastName}`,
+          address: employee.address || privateInfo[index % privateInfo.length],
+          phone: employee.phone || `+91 90000 ${String(10000 + index).slice(-5)}`,
+          skills: employee.skills.length ? employee.skills : profileForEmployee(employee).skills,
+          certifications: employee.certifications.length ? employee.certifications : profileForEmployee(employee).certifications,
+          resumeSummary: employee.resumeSummary || profileForEmployee(employee).resumeSummary,
+          interests: employee.interests.length ? employee.interests : profileForEmployee(employee).interests,
+          lastLoginAt: employee.lastLoginAt || new Date(Date.now() - (index + 1) * 60 * 60 * 1000),
+        },
+      });
     }
   }
 
@@ -240,6 +286,14 @@ async function main() {
         create: { employeeId: employee.id, date: today, status: attendance.status, checkIn, checkOut },
       });
     }
+  }
+
+  for (const employee of await prisma.employee.findMany({ select: { id: true, role: true } })) {
+    await prisma.salaryStructure.upsert({
+      where: { employeeId: employee.id },
+      update: {},
+      create: { employeeId: employee.id, monthlyWage: employee.role === "ADMIN" ? 100000 : employee.role === "HR" ? 70000 : 50000 },
+    });
   }
 
   const leaveReasons = ["Medical appointment", "Personal leave", "Family responsibility", "Rest day"];

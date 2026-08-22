@@ -30,7 +30,7 @@ attendanceRouter.get("/", requireAuth, async (req, res) => {
   const records = await prisma.attendance.findMany({
     where: { employeeId: employee.id, date: { gte: from, lte: to } },
     orderBy: { date: "asc" },
-    select: { date: true, checkIn: true, checkOut: true, status: true, reason: req.query.view === "week" },
+    select: { date: true, checkIn: true, checkOut: true, status: true, reason: true },
   });
   res.json(records.map((record) => ({ ...record, date: dateKey(record.date) })));
 });

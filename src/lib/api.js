@@ -73,4 +73,8 @@ export const api = {
     method: "PATCH",
     body: JSON.stringify({ status, reviewNote }),
   }),
+
+  mySalary: () => request("/salary/me"),
+
+  companySalaries: () => request("/salary/company"),
 };

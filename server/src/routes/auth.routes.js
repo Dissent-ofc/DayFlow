@@ -113,6 +113,7 @@ authRouter.post("/login", async (req, res) => {
     }
 
     const token = signToken({ id: employee.id, role: employee.role, companyId: employee.companyId });
+    await prisma.employee.update({ where: { id: employee.id }, data: { lastLoginAt: new Date() } });
     res.cookie("dayflow_token", token, authCookieOptions);
 
     res.json({
@@ -165,6 +166,11 @@ authRouter.get("/me", requireAuth, async (req, res) => {
       email: true,
       avatarUrl: true,
       companyId: true,
+      skills: true,
+      certifications: true,
+      resumeSummary: true,
+      interests: true,
+      lastLoginAt: true,
       company: {
         select: {
           id: true,

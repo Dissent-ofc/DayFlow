@@ -3,6 +3,8 @@ import { prisma } from "../lib/prisma.js";
 import { hashPassword, generateTempPassword } from "../utils/auth.js";
 import { generateLoginId } from "../utils/loginId.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { calculateSalary } from "../utils/salary.js";
+import { profileForEmployee } from "../utils/profile.js";
 
 export const employeesRouter = Router();
 
@@ -18,10 +20,14 @@ employeesRouter.get("/", requireAuth, async (req, res) => {
       role: true,
       jobTitle: true,
       avatarUrl: true,
+      skills: true,
+      certifications: true,
+      resumeSummary: true,
+      interests: true,
       attendance: {
         orderBy: { date: "desc" },
         take: 1,
-        select: { status: true },
+        select: { status: true, checkIn: true },
       },
     },
     orderBy: { firstName: "asc" },
@@ -47,11 +53,26 @@ employeesRouter.get("/:id", requireAuth, async (req, res) => {
       manager: true,
       location: true,
       joinDate: true,
+      skills: true,
+      certifications: true,
+      resumeSummary: true,
+      interests: true,
+      lastLoginAt: true,
       // Salary is strictly limited to Admins, including when viewing their own profile.
-      salary: req.user.role === "ADMIN",
+      salary: req.user.role === "ADMIN" || req.user.role === "HR" || req.user.id === req.params.id,
     },
   });
   if (!employee) return res.status(404).json({ error: "Employee not found." });
+  if (employee.salary) {
+    const now = new Date();
+    const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+    const [attendance, leaveRequests] = await Promise.all([
+      prisma.attendance.findMany({ where: { employeeId: employee.id, date: { gte: from, lte: to } }, select: { status: true } }),
+      prisma.leaveRequest.findMany({ where: { employeeId: employee.id, status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } }, select: { type: true, startDate: true, endDate: true } }),
+    ]);
+    employee.salary = { ...employee.salary, ...calculateSalary({ monthlyWage: employee.salary.monthlyWage, attendance, leaveRequests, year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 }) };
+  }
   res.json(employee);
 });
 
@@ -95,6 +116,10 @@ employeesRouter.post("/", requireAuth, requireAdmin, async (req, res) => {
       lastName,
       phone,
       role: role === "ADMIN" && req.user.role === "ADMIN" ? "ADMIN" : role === "HR" ? "HR" : "EMPLOYEE",
+      skills: profileForEmployee({ jobTitle, role }).skills,
+      certifications: profileForEmployee({ jobTitle, role }).certifications,
+      resumeSummary: profileForEmployee({ jobTitle, role }).resumeSummary,
+      interests: profileForEmployee({ jobTitle, role }).interests,
       jobTitle,
       department,
       companyId: company.id,

@@ -6,6 +6,7 @@ import { authRouter } from "./routes/auth.routes.js";
 import { employeesRouter } from "./routes/employees.routes.js";
 import { attendanceRouter } from "./routes/attendance.routes.js";
 import { timeoffRouter } from "./routes/timeoff.routes.js";
+import { salaryRouter } from "./routes/salary.routes.js";
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use("/auth", authRouter);
 app.use("/employees", employeesRouter);
 app.use("/attendance", attendanceRouter);
 app.use("/timeoff", timeoffRouter);
+app.use("/salary", salaryRouter);
 
 // Central error handler — keeps stack traces out of API responses.
 app.use((err, req, res, next) => {
