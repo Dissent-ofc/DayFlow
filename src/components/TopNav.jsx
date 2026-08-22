@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useAttendance } from "../context/AttendanceContext";
 import { useAuth } from "../context/AuthContext";
+import CheckInWidget from "./CheckInWidget";
 
 const TABS = [
   { to: "/dashboard", label: "Employees" },
@@ -67,6 +68,7 @@ export default function TopNav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3" ref={menuRef}>
+          <CheckInWidget />
           <span
             className={`h-2.5 w-2.5 rounded-full ${isCheckedIn ? "bg-success" : "bg-danger"}`}
             title={isCheckedIn ? "Checked in" : "Not checked in"}

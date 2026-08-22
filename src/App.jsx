@@ -9,6 +9,9 @@ import AppShell from "./layouts/AppShell";
 import AdminProfile from "./pages/AdminProfile";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import NewEmployee from "./pages/NewEmployee";
+import ChangePassword from "./pages/ChangePassword";
+import Attendance from "./pages/Attendance";
+import TimeOff from "./pages/TimeOff";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -42,10 +45,11 @@ export default function App() {
               }
             >
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/attendance" element={<ComingSoon title="Attendance" />} />
-              <Route path="/timeoff" element={<ComingSoon title="Time Off" />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/timeoff" element={<TimeOff />} />
               <Route path="/profile" element={<AdminProfile />} />
               <Route path="/employees/new" element={<NewEmployee />} />
+                            <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/employees/:id" element={<EmployeeProfile />} />
             </Route>
           </Routes>

@@ -13,9 +13,9 @@ export function requireAuth(req, res, next) {
   }
 }
 
-/** Gates a route to Admin/HR only. Use after requireAuth. */
+/** Gates employee-management routes to Admin/HR only. Use after requireAuth. */
 export function requireAdmin(req, res, next) {
-  if (req.user?.role !== "ADMIN") {
+  if (!['ADMIN', 'HR'].includes(req.user?.role)) {
     return res.status(403).json({ error: "Admins and HR officers only." });
   }
   next();

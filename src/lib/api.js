@@ -39,4 +39,32 @@ export const api = {
 
   createEmployee: (data) =>
     request("/employees", { method: "POST", body: JSON.stringify(data) }),
+
+  deleteEmployee: (id) => request(`/employees/${id}`, { method: "DELETE" }),
+
+  attendance: ({ employeeId, from, to, view } = {}) => {
+    const params = new URLSearchParams();
+    if (employeeId) params.set("employeeId", employeeId);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    if (view) params.set("view", view);
+    return request(`/attendance?${params.toString()}`);
+  },
+
+  attendanceList: (date) => request(`/attendance/list?date=${date}`),
+
+  checkIn: () => request("/attendance/check-in", { method: "POST" }),
+
+  checkOut: () => request("/attendance/check-out", { method: "POST" }),
+
+  timeOff: () => request("/timeoff"),
+
+  requestTimeOff: (data) => request("/timeoff", { method: "POST", body: JSON.stringify(data) }),
+
+  timeOffRequests: () => request("/timeoff/requests"),
+
+  reviewTimeOff: (id, status, reviewNote) => request(`/timeoff/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, reviewNote }),
+  }),
 };

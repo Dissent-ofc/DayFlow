@@ -159,8 +159,11 @@ export default function EmployeeProfile() {
   }
 
   const employeeName = `${employee.firstName} ${employee.lastName}`;
-  const canViewPrivateRecords = isAdmin || isSelf;
-  const visibleTabs = canViewPrivateRecords ? tabs : ["Resume"];
+  const isHr = user?.role === "HR";
+  const canViewPrivateRecords = isAdmin || isHr || isSelf;
+  const visibleTabs = canViewPrivateRecords
+    ? (isAdmin ? tabs : tabs.filter((tab) => tab !== "Salary Info"))
+    : ["Resume"];
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : "Resume";
 
   return (
@@ -183,6 +186,11 @@ export default function EmployeeProfile() {
               {isAdmin && (
                 <span className="rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-success">
                   Admin full access
+                </span>
+              )}
+              {isHr && (
+                <span className="rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-success">
+                  HR access
                 </span>
               )}
             </div>

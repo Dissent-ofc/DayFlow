@@ -4,6 +4,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { authRouter } from "./routes/auth.routes.js";
 import { employeesRouter } from "./routes/employees.routes.js";
+import { attendanceRouter } from "./routes/attendance.routes.js";
+import { timeoffRouter } from "./routes/timeoff.routes.js";
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use(cookieParser());
 app.get("/health", (req, res) => res.json({ ok: true }));
 app.use("/auth", authRouter);
 app.use("/employees", employeesRouter);
+app.use("/attendance", attendanceRouter);
+app.use("/timeoff", timeoffRouter);
 
 // Central error handler — keeps stack traces out of API responses.
 app.use((err, req, res, next) => {
