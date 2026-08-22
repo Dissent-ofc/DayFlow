@@ -89,6 +89,16 @@
   font-size: 28px;
   margin: 0 0 8px;
 }
+.auth__error {
+  background: #F8717122;
+  border: 1px solid #F8717155;
+  color: #FCA5A5;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
 .auth__hint {
   color: var(--text-muted);
   font-size: 14px;

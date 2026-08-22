@@ -1,20 +1,45 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import EmployeeCard from "../components/EmployeeCard";
 import { mockEmployees } from "../data/mockEmployees";
+import { api } from "../lib/api";
 
 export default function Dashboard() {
   const [query, setQuery] = useState("");
+  const [employees, setEmployees] = useState(mockEmployees);
+  const [usingMockData, setUsingMockData] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api
+      .listEmployees()
+      .then((data) => {
+        // API doesn't return a live "status" field yet (that's the
+        // Attendance module) — default everyone to present for now.
+        setEmployees(
+          data.map((e) => ({
+            id: e.loginId,
+            name: `${e.firstName} ${e.lastName}`,
+            status: "present",
+          })),
+        );
+        setUsingMockData(false);
+      })
+      .catch(() => {
+        // No backend running / not signed in yet — keep showing mock data
+        // so the dashboard is still browsable standalone.
+        setUsingMockData(true);
+      });
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return mockEmployees;
-    return mockEmployees.filter(
+    if (!q) return employees;
+    return employees.filter(
       (e) => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, employees]);
 
   return (
     <div>
@@ -32,9 +57,15 @@ export default function Dashboard() {
           />
         </div>
         <span className="font-mono text-xs text-faint">
-          {filtered.length} of {mockEmployees.length}
+          {filtered.length} of {employees.length}
         </span>
       </div>
+
+      {usingMockData && (
+        <p className="mb-4 font-mono text-[11px] text-faint">
+          Showing sample data — connect the API and sign in to see real employees.
+        </p>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted">

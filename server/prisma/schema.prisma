@@ -1,0 +1,115 @@
+// DayFlow HRMS — database schema
+// Run `npx prisma generate` after install, then `npx prisma migrate dev --name init`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN // Admin / HR Officer — see doc section 2
+  EMPLOYEE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+}
+
+enum LeaveType {
+  PAID
+  SICK
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// One HRMS instance can host one company. Created on "Register company".
+model Company {
+  id        String     @id @default(uuid())
+  name      String
+  code      String     @unique // e.g. "OI" — used in generated Login IDs
+  logoUrl   String?
+  createdAt DateTime   @default(now())
+  employees Employee[]
+}
+
+model Employee {
+  id                String    @id @default(uuid())
+  loginId           String    @unique // e.g. OIJODO20220001 — see doc 3.1.1
+  email             String    @unique
+  passwordHash      String
+  mustChangePassword Boolean  @default(true) // forced on first login, per wireframe note
+
+  firstName String
+  lastName  String
+  phone     String?
+  address   String?
+  avatarUrl String?
+
+  role   Role   @default(EMPLOYEE)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  jobTitle   String?
+  department String?
+  manager    String?
+  location   String?
+  joinDate   DateTime @default(now())
+  joinYear   Int      // used to rebuild the Login ID's year segment
+  serial     Int      // per-company, per-year serial used in the Login ID
+
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
+  salary        SalaryStructure?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, joinYear, serial])
+}
+
+model Attendance {
+  id         String            @id @default(uuid())
+  employeeId String
+  employee   Employee          @relation(fields: [employeeId], references: [id])
+  date       DateTime          @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     AttendanceStatus  @default(PRESENT)
+
+  @@unique([employeeId, date])
+}
+
+model LeaveRequest {
+  id         String      @id @default(uuid())
+  employeeId String
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  type       LeaveType
+  startDate  DateTime    @db.Date
+  endDate    DateTime    @db.Date
+  remarks    String?
+  status     LeaveStatus @default(PENDING)
+  reviewedBy String?     // employeeId of the Admin/HR who actioned it
+  reviewNote String?
+  createdAt  DateTime    @default(now())
+}
+
+// Placeholder for the Salary Info tab (Image 3) — components will be
+// broken out into their own model once that screen is built.
+model SalaryStructure {
+  id          String   @id @default(uuid())
+  employeeId  String   @unique
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  monthlyWage Int
+  updatedAt   DateTime @updatedAt
+}
