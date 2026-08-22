@@ -10,30 +10,39 @@ import { salaryRouter } from "./routes/salary.routes.js";
 
 const app = express();
 
-const allowedOrigins = [
+const defaultOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
   "http://localhost:3000",
 ];
 
-if (process.env.CLIENT_ORIGIN) {
-  allowedOrigins.push(process.env.CLIENT_ORIGIN);
-}
+const envOrigins = (process.env.CLIENT_ORIGIN || "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+const allowedOrigins = [...defaultOrigins, ...envOrigins];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        /^http:\/\/localhost:[0-9]+$/.test(origin) ||
-        /^http:\/\/127\.0\.0\.1:[0-9]+$/.test(origin)
-      ) {
-        return callback(null, true);
+      const normalized = origin.replace(/\/+$/, "");
+      try {
+        const hostname = new URL(origin).hostname;
+        if (
+          allowedOrigins.includes(normalized) ||
+          /^http:\/\/localhost:[0-9]+$/.test(origin) ||
+          /^http:\/\/127\.0\.0\.1:[0-9]+$/.test(origin) ||
+          hostname.endsWith(".vercel.app")
+        ) {
+          return callback(null, true);
+        }
+      } catch {
+        // Fallback for non-URL origins
       }
-      return callback(new Error("Not allowed by CORS"));
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
     },
     credentials: true,
   })
