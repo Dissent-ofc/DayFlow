@@ -103,52 +103,107 @@
   margin-bottom: 18px;
   font-size: 13.5px;
   color: var(--text-muted);
+  width: 100%;
+}
+.field > span {
+  font-weight: 500;
 }
 .field input {
+  width: 100%;
+  box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 11px 14px;
   font-size: 14.5px;
   font-family: var(--font-mono);
-  transition: border-color 0.15s ease;
+  height: 44px;
+  line-height: normal;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .field input::placeholder { color: var(--text-faint); }
-.field input:focus { border-color: var(--accent); outline: none; }
-
-.field__input-wrap { position: relative; display: flex; }
-.field__input-wrap input { flex: 1; padding-right: 60px; }
-.field__toggle {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--accent-2);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 6px 8px;
+.field input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(178, 75, 232, 0.2);
 }
 
-.field__row { display: flex; gap: 10px; }
-.field__row input { flex: 1; }
+.field__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.field__input-wrap input {
+  width: 100%;
+  padding-right: 68px;
+}
+.field__toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 178, 88, 0.08);
+  border: 1px solid rgba(255, 178, 88, 0.25);
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 0 9px;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+.field__toggle:hover {
+  background: rgba(255, 178, 88, 0.16);
+  border-color: rgba(255, 178, 88, 0.45);
+}
+
+.field__row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+.field__row input {
+  flex: 1;
+  min-width: 0;
+}
 .upload-btn {
   width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px dashed var(--border);
   background: var(--surface-raised);
   color: var(--accent-2);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 16px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.upload-btn:hover {
+  border-color: var(--accent-2);
+  background: rgba(255, 178, 88, 0.08);
 }
 
 .auth__grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  width: 100%;
+}
+.auth__grid2 .field {
+  min-width: 0;
 }
 
 .auth__row {
@@ -158,11 +213,41 @@
   margin-bottom: 22px;
   font-size: 13px;
 }
-.checkbox { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
-.auth__link { color: var(--text-muted); }
+.checkbox { display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; }
+.checkbox input { cursor: pointer; }
+.auth__link { color: var(--text-muted); transition: color 0.15s ease; }
 .auth__link:hover { color: var(--accent-2); }
 
-.btn--full { width: 100%; }
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.btn--primary {
+  background: var(--accent);
+  color: #0B0B10;
+  box-shadow: 0 4px 16px rgba(178, 75, 232, 0.3);
+}
+.btn--primary:hover:not(:disabled) {
+  background: #C465EE;
+  box-shadow: 0 6px 20px rgba(178, 75, 232, 0.45);
+}
+.btn--full {
+  width: 100%;
+}
 
 .auth__switch {
   margin: 20px 0 0;
