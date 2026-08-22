@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DayBars from "../components/DayBars";
 import "./Login.css";
 
 export default function Login() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const [mode, setMode] = useState(params.get("mode") === "signup" ? "signup" : "signin");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -51,7 +52,13 @@ export default function Login() {
           </div>
 
           {mode === "signin" ? (
-            <form className="auth__form" onSubmit={(e) => e.preventDefault()}>
+            <form
+              className="auth__form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate("/dashboard");
+              }}
+            >
               <h1>Welcome back</h1>
               <p className="auth__hint">
                 Sign in with the login ID or email your HR admin gave you.
