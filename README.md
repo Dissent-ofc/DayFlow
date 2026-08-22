@@ -63,7 +63,7 @@ Use two terminals.
 API server:
 
 ```powershell
-cd C:\Users\spars\OneDrive\Desktop\DayFlow\server
+cd C:DayFlow\server
 npm run dev
 ```
 
@@ -72,7 +72,7 @@ API URL: `http://localhost:4000`.
 Frontend:
 
 ```powershell
-cd C:\Users\spars\OneDrive\Desktop\DayFlow
+cd DayFlow
 npm run dev
 ```
 
