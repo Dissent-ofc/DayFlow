@@ -44,7 +44,7 @@ Use a complete real PostgreSQL URL beginning with `postgresql://`. Do not use pl
 ## Installation
 
 ```powershell
-cd C:\Users\spars\OneDrive\Desktop\DayFlow
+cd DayFlow
 npm install
 
 cd server
