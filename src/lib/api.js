@@ -15,6 +15,7 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  // Auth
   login: (identifier, password) =>
     request("/auth/login", { method: "POST", body: JSON.stringify({ identifier, password }) }),
 
@@ -25,5 +26,17 @@ export const api = {
 
   me: () => request("/auth/me"),
 
+  changePassword: (currentPassword, newPassword) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+
+  // Employees
   listEmployees: () => request("/employees"),
+
+  getEmployee: (id) => request(`/employees/${id}`),
+
+  createEmployee: (data) =>
+    request("/employees", { method: "POST", body: JSON.stringify(data) }),
 };

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DayBars from "../components/DayBars";
-import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 export default function Login() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState(params.get("mode") === "signup" ? "signup" : "signin");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -28,7 +29,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await api.login(signin.identifier, signin.password);
+      await login(signin.identifier, signin.password);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -46,7 +47,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      await api.registerCompany(signup);
+      await register(signup);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

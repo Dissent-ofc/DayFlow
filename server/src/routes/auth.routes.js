@@ -82,23 +82,34 @@ authRouter.post("/login", async (req, res) => {
     return res.status(400).json({ error: "identifier and password are required." });
   }
 
-  const employee = await prisma.employee.findFirst({
-    where: { OR: [{ loginId: identifier }, { email: identifier }] },
-  });
+  try {
+    const employee = await prisma.employee.findFirst({
+      where: {
+        OR: [
+          { loginId: { equals: identifier.trim(), mode: "insensitive" } },
+          { email: { equals: identifier.trim(), mode: "insensitive" } },
+          { loginId: { contains: identifier.trim(), mode: "insensitive" } },
+        ],
+      },
+    });
 
-  if (!employee || !(await verifyPassword(password, employee.passwordHash))) {
-    return res.status(401).json({ error: "Incorrect Login ID/email or password." });
+    if (!employee || !(await verifyPassword(password, employee.passwordHash))) {
+      return res.status(401).json({ error: "Incorrect Login ID/email or password." });
+    }
+
+    const token = signToken({ id: employee.id, role: employee.role, companyId: employee.companyId });
+    res.cookie("dayflow_token", token, authCookieOptions);
+
+    res.json({
+      id: employee.id,
+      loginId: employee.loginId,
+      role: employee.role,
+      mustChangePassword: employee.mustChangePassword,
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: err.message || "Database connection error or login failed." });
   }
-
-  const token = signToken({ id: employee.id, role: employee.role, companyId: employee.companyId });
-  res.cookie("dayflow_token", token, authCookieOptions);
-
-  res.json({
-    id: employee.id,
-    loginId: employee.loginId,
-    role: employee.role,
-    mustChangePassword: employee.mustChangePassword,
-  });
 });
 
 authRouter.post("/logout", (req, res) => {

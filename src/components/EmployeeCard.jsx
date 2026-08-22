@@ -41,7 +41,7 @@ export default function EmployeeCard({ employee, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group relative flex flex-col items-start gap-3 rounded-xl border border-border bg-surface p-4 text-left transition hover:border-accent hover:-translate-y-0.5"
+      className="employee-card group relative flex flex-col items-start gap-3 rounded-xl border border-border p-4 text-left transition hover:border-accent hover:-translate-y-0.5"
     >
       <span className="absolute right-3 top-3">
         <StatusBadge status={employee.status} />
@@ -49,7 +49,7 @@ export default function EmployeeCard({ employee, onClick }) {
       <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised font-display text-base font-semibold text-accent-2 transition group-hover:bg-border-soft">
         {initials(employee.name)}
       </span>
-      <div>
+      <div className="employee-card__info">
         <p className="text-sm font-medium text-text">{employee.name}</p>
         <p className="font-mono text-[11px] text-faint">{employee.id}</p>
       </div>
