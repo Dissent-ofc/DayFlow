@@ -56,6 +56,11 @@ model Employee {
   phone     String?
   address   String?
   avatarUrl String?
+  skills   String[] @default([])
+  certifications String[] @default([])
+  resumeSummary String?
+  interests String[] @default([])
+  lastLoginAt DateTime?
 
   role   Role   @default(EMPLOYEE)
   companyId String

@@ -19,31 +19,25 @@ function Field({ label, value }) {
   );
 }
 
-function DetailPanel({ tab, employee, isAdmin }) {
+function DetailPanel({ tab, employee, canViewSalary }) {
   if (tab === "Resume") {
     return (
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-surface/65 p-5">
           <h2 className="font-display text-lg font-semibold text-text">About</h2>
-          <p className="mt-4 text-sm leading-7 text-muted">
-            A valued member of the DayFlow team, contributing thoughtful work and
-            helping the organization move with clarity.
-          </p>
+          <p className="mt-4 text-sm leading-7 text-muted">{employee.resumeSummary || "A valued member of the DayFlow team, contributing thoughtful work and helping the organization move with clarity."}</p>
           <h3 className="mt-6 font-display text-base font-semibold text-text">Professional summary</h3>
-          <p className="mt-3 text-sm leading-7 text-muted">
-            This employee profile is maintained by HR. Resume notes and professional
-            highlights will appear here as they are added.
-          </p>
+          <p className="mt-3 text-sm leading-7 text-muted">Core strengths include {employee.skills?.slice(0, 3).join(", ") || "collaboration, communication, and thoughtful problem solving"}.</p>
+          <h3 className="mt-6 font-display text-base font-semibold text-text">Interests</h3>
+          <p className="mt-3 text-sm leading-7 text-muted">{employee.interests?.join(", ") || "Professional learning and team development"}.</p>
         </section>
         <section className="rounded-xl border border-border bg-surface/65 p-5">
           <h2 className="font-display text-lg font-semibold text-text">Skills</h2>
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1.5 text-xs text-text">Collaboration</span>
-            <span className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1.5 text-xs text-text">Communication</span>
-            <span className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1.5 text-xs text-text">Problem solving</span>
+            {(employee.skills ?? []).map((skill) => <span key={skill} className="rounded-full border border-accent/40 bg-accent/15 px-3 py-1.5 text-xs text-text">{skill}</span>)}
           </div>
           <h2 className="mt-7 font-display text-lg font-semibold text-text">Certifications</h2>
-          <p className="mt-4 text-sm text-muted">No certifications added.</p>
+          <div className="mt-4 space-y-2">{(employee.certifications ?? []).map((certification) => <p key={certification} className="rounded-md border border-border-soft bg-bg/30 px-3 py-2 text-sm text-muted">{certification}</p>)}</div>
         </section>
       </div>
     );
@@ -65,7 +59,7 @@ function DetailPanel({ tab, employee, isAdmin }) {
   }
 
   if (tab === "Salary Info") {
-    if (!isAdmin) {
+    if (!canViewSalary) {
       return (
         <div className="rounded-xl border border-border bg-surface/65 p-5">
           <div className="flex items-start gap-3 rounded-lg border border-accent-2/25 bg-accent-2/10 p-4">
@@ -92,6 +86,9 @@ function DetailPanel({ tab, employee, isAdmin }) {
         <h2 className="font-display text-lg font-semibold text-text">Salary Structure</h2>
         <div className="mt-5 grid gap-x-10 sm:grid-cols-2">
           <Field label="Monthly wage" value={employee.salary ? `₹${employee.salary.monthlyWage?.toLocaleString("en-IN")}` : "Not set"} />
+          <Field label="Net pay this month" value={employee.salary ? `₹${employee.salary.netPay?.toLocaleString("en-IN")}` : "Not set"} />
+          <Field label="Basic salary" value={employee.salary ? `₹${employee.salary.components?.basic?.toLocaleString("en-IN")}` : "Not set"} />
+          <Field label="Attendance adjustment" value={employee.salary ? `-₹${((employee.salary.contributions?.absentDeduction ?? 0) + (employee.salary.contributions?.unpaidLeaveDeduction ?? 0)).toLocaleString("en-IN")}` : "Not set"} />
           <Field label="Pay cycle" value="Monthly" />
           <Field label="Currency" value="INR" />
           <Field label="Review cycle" value="Annual" />
@@ -127,6 +124,8 @@ export default function EmployeeProfile() {
 
   const isAdmin = user?.role === "ADMIN";
   const isSelf = user?.id === id;
+  const isHr = user?.role === "HR";
+  const canViewSalary = isAdmin || isHr || isSelf;
 
   useEffect(() => {
     setLoadingEmployee(true);
@@ -159,10 +158,9 @@ export default function EmployeeProfile() {
   }
 
   const employeeName = `${employee.firstName} ${employee.lastName}`;
-  const isHr = user?.role === "HR";
   const canViewPrivateRecords = isAdmin || isHr || isSelf;
   const visibleTabs = canViewPrivateRecords
-    ? (isAdmin ? tabs : tabs.filter((tab) => tab !== "Salary Info"))
+    ? (canViewSalary ? tabs : tabs.filter((tab) => tab !== "Salary Info"))
     : ["Resume"];
   const selectedTab = visibleTabs.includes(activeTab) ? activeTab : "Resume";
 
@@ -231,7 +229,7 @@ export default function EmployeeProfile() {
         ))}
       </nav>
 
-      <DetailPanel tab={selectedTab} employee={employee} isAdmin={isAdmin} />
+      <DetailPanel tab={selectedTab} employee={employee} canViewSalary={canViewSalary} />
 
       <div className="flex items-center gap-2 text-xs text-faint">
         <Pencil size={13} /> Profile changes can only be made by an authorized administrator.
