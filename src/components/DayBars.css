@@ -1,0 +1,81 @@
+.daybars {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(10px, 1.6vw, 20px);
+}
+
+.daybars--lg {
+  height: 220px;
+}
+
+.daybars--sm {
+  height: 64px;
+  gap: 8px;
+}
+
+.daybars__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.daybars--sm .daybars__col {
+  gap: 0;
+}
+
+.daybars__bar {
+  width: 100%;
+  max-width: 34px;
+  height: 72%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent) 0%, #7B2FB0 100%);
+  transform-origin: bottom center;
+}
+
+.daybars--sm .daybars__bar {
+  max-width: 6px;
+  border-radius: 3px;
+}
+
+.daybars__bar[data-weekend="true"] {
+  background: linear-gradient(180deg, var(--accent-2) 0%, #C97A2E 100%);
+}
+
+.daybars__label {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Entrance: each bar starts at a scattered height/rotation/offset,
+   then eases into one flat, aligned row. Stagger via --i. */
+.daybars--lg .daybars__col.is-animated .daybars__bar {
+  animation: settle 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i) * 70ms + 150ms);
+}
+
+.daybars--lg .daybars__col:nth-child(1).is-animated .daybars__bar { --sh: 46%; --sr: -6deg; --sx: -3px; }
+.daybars--lg .daybars__col:nth-child(2).is-animated .daybars__bar { --sh: 88%; --sr: 4deg;  --sx: 2px; }
+.daybars--lg .daybars__col:nth-child(3).is-animated .daybars__bar { --sh: 58%; --sr: -3deg; --sx: -2px; }
+.daybars--lg .daybars__col:nth-child(4).is-animated .daybars__bar { --sh: 100%; --sr: 5deg; --sx: 3px; }
+.daybars--lg .daybars__col:nth-child(5).is-animated .daybars__bar { --sh: 40%; --sr: -5deg; --sx: -4px; }
+.daybars--lg .daybars__col:nth-child(6).is-animated .daybars__bar { --sh: 70%; --sr: 6deg;  --sx: 3px; }
+.daybars--lg .daybars__col:nth-child(7).is-animated .daybars__bar { --sh: 30%; --sr: -4deg; --sx: -2px; }
+
+@keyframes settle {
+  0% {
+    height: var(--sh, 50%);
+    transform: rotate(var(--sr, 0deg)) translateX(var(--sx, 0));
+    opacity: 0.55;
+  }
+  100% {
+    height: 72%;
+    transform: rotate(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daybars__bar { animation: none !important; height: 72% !important; }
+}
